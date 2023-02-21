@@ -1,0 +1,9 @@
+prophet
+streamlit
+matplotlib
+pyplot
+pandas
+numpy
+PIL
+datetime
+pandas_datareader
