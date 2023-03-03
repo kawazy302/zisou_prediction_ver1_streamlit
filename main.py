@@ -80,7 +80,8 @@ if option == '日経平均':
 
     # 学習データに基づいて未来を予測
     future = model.make_future_dataframe(periods=365)
-    forecast = model.predict(future)
+    m = Prophet(changepoint_prior_scale=0.5)
+    forecast = m.fit(data).predict(future)
 
     # 予測結果表示エリア
     st.subheader(option + 'の将来予測値')
@@ -91,9 +92,8 @@ if option == '日経平均':
 
         # 予測結果の可視化 Streamlitなので plt.show()ではない。
         st.write('予測結果')
-        pred_fig = model.plot(forecast)
-        # 変化点を追加
-        # cp_pred_fig = add_changepoints_to_plot(pred_fig, model, forecast)
+        pred_fig = m.plot(forecast)
+        a = add_changepoints_to_plot(pred_fig.gca(), m, forecast)
         # 軸ラベルを追加
         plt.xlabel('Date', fontsize=10)
         plt.ylabel('Price', fontsize=10)
@@ -127,8 +127,8 @@ elif option == 'S&P500':
 
     # 学習データに基づいて未来を予測
     future = model.make_future_dataframe(periods=365)
-    forecast = model.predict(future)
-
+    m = Prophet(changepoint_prior_scale=0.5)
+    forecast = m.fit(data).predict(future)
     # 予測結果表示エリア
     st.subheader(option + 'の将来予測値')
 
@@ -138,7 +138,8 @@ elif option == 'S&P500':
 
         # 予測結果の可視化 Streamlitなので plt.show()ではない。
         st.write('予測結果')
-        pred_fig = model.plot(forecast)
+        pred_fig = m.plot(forecast)
+        a = add_changepoints_to_plot(pred_fig.gca(), m, forecast)
         # 軸ラベルを追加
         plt.xlabel('Date', fontsize=10)
         plt.ylabel('Price', fontsize=10)
@@ -172,8 +173,8 @@ elif option == '円ドル為替':
 
     # 学習データに基づいて未来を予測
     future = model.make_future_dataframe(periods=365)
-    forecast = model.predict(future)
-
+    m = Prophet(changepoint_prior_scale=0.5)
+    forecast = m.fit(data).predict(future)
     # 予測結果表示エリア
     st.subheader(option + 'の将来予測値')
 
@@ -183,7 +184,8 @@ elif option == '円ドル為替':
 
         # 予測結果の可視化 Streamlitなので plt.show()ではない。
         st.write('予測結果')
-        pred_fig = model.plot(forecast)
+        pred_fig = m.plot(forecast)
+        a = add_changepoints_to_plot(pred_fig.gca(), m, forecast)
         # 軸ラベルを追加
         plt.xlabel('Date', fontsize=10)
         plt.ylabel('Price', fontsize=10)
@@ -208,14 +210,16 @@ elif option == '金価格':
     model.fit(data)
     # 学習データに基づいて未来を予測
     future = model.make_future_dataframe(periods=365)
-    forecast = model.predict(future)
+    m = Prophet(changepoint_prior_scale=0.5)
+    forecast = m.fit(data).predict(future)
 
     # 予測結果表示エリア
     st.subheader(option + 'の将来予測値')
 
     # 予測結果の可視化 Streamlitなので plt.show()ではない。
     st.write('予測結果')
-    pred_fig = model.plot(forecast)
+    pred_fig = m.plot(forecast)
+    a = add_changepoints_to_plot(pred_fig.gca(), m, forecast)
     # 軸ラベルを追加
     plt.xlabel('Date', fontsize=10)
     plt.ylabel('Price', fontsize=10)
