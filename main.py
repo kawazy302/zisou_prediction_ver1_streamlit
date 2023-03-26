@@ -83,29 +83,43 @@ if option == '日経平均':
     m = Prophet(changepoint_prior_scale=0.5)
     forecast = m.fit(data).predict(future)
 
+    # 異常値検知の検証用
+    start_date = data['ds'].max() - pd.Timedelta(days=10000)
+    anomaly_df = data[data['ds'] >= start_date]
+    # 異常を検知するために、予測値と実測値の差を求めます。
+    forecast = model.predict(anomaly_df)
+    anomaly_df['residual'] = anomaly_df['y'] - forecast['yhat']
+    # 異常を検知するための閾値を決定します。ここでは、平均値から2つの標準偏差を使って閾値を決定します。
+    threshold = anomaly_df['residual'].mean() + 2 * \
+        anomaly_df['residual'].std()
+    # 異常を検知します。ここでは、予測値と実測値の差が閾値より大きい場合を異常として検知します。
+    anomaly_df['is_anomaly'] = anomaly_df['residual'].apply(
+        lambda x: 1 if x > threshold else 0)
+
     # 予測結果表示エリア
     st.subheader(option + 'の将来予測値')
 
-    col1, col2 = st.columns(2)
+    # 予測結果の可視化 Streamlitなので plt.show()ではない。
+    st.write('予測結果')
+    pred_fig = m.plot(forecast)
+    forecast.plot.scatter(x='ds', y='yhat', ax=pred_fig.gca(),
+                          c='black', label='Prediction')
+    plt.scatter(anomaly_df[anomaly_df['is_anomaly'] == 1]['ds'],
+                anomaly_df[anomaly_df['is_anomaly'] == 1]['y'], color='red', label='Anomaly')
+    a = add_changepoints_to_plot(pred_fig.gca(), m, forecast)
 
-    with col1:
+    # 凡例
+    plt.legend(loc='upper left')
+    # 軸ラベルを追加
+    plt.xlabel('Date', fontsize=10)
+    plt.ylabel('Price', fontsize=10)
+    # グラフ表示
+    st.pyplot(pred_fig)
 
-        # 予測結果の可視化 Streamlitなので plt.show()ではない。
-        st.write('予測結果')
-        pred_fig = m.plot(forecast)
-        a = add_changepoints_to_plot(pred_fig.gca(), m, forecast)
-        # 軸ラベルを追加
-        plt.xlabel('Date', fontsize=10)
-        plt.ylabel('Price', fontsize=10)
-        # グラフ表示
-        st.pyplot(pred_fig)
-
-    with col2:
-
-        # トレンド性と周期性の抽出
-        st.write('トレンド性と周期性')
-        trend_fig = model.plot_components(forecast)
-        st.pyplot(trend_fig)
+    # トレンド性と周期性の抽出
+    st.write('トレンド性と周期性')
+    trend_fig = model.plot_components(forecast)
+    st.pyplot(trend_fig)
 
 elif option == 'S&P500':
     date_st = datetime(2010, 1, 1)
